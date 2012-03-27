@@ -1,0 +1,46 @@
+#!/usr/local/bin/python
+
+import argparse
+
+#load the plugin
+def load_plugin(name):
+    mod = __import__("pf6mod_%s" % name)
+    return mod
+
+#call the plugin
+def call_plugin(name, *args):
+    plugin = load_plugin(name)
+    return plugin.plugin_main(*args)
+
+#make sure prefix is valid
+def prefix_sanitize(prefix):
+    #does prefix end in :: ?
+    if (prefix[len(prefix)-2] != "::"):
+        prefix = "%s::" % prefix
+    
+################
+#entrypoint
+################
+
+prefix = "2001:468:c80::"
+plugins = ["dhcp","ports"]
+addrs = []
+
+#handle command line arguments
+parser = ArgumentParser(description = "an ipv6 prefix fuzzer")
+parser.add_argument("prefix", help="prefix to fuzz")
+parser.add_argument('--module', type="list", action="store", help = "specify a module to use")
+parser.add_argument('--module-list', action="store_true", value=False, help="List modules installed")
+
+#iterate over plugins
+for plugin in plugins:
+    plugin_addrs = call_plugin(plugin, prefix)
+    if plugin_addrs != None:
+        #loop through addresses
+        for addr in plugin_addrs:
+            addrs.append(addr)
+
+#remove duplicates
+finalized_addrs = list(set(addrs))
+
+#output options
