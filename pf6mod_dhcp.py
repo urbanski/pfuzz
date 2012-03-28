@@ -8,11 +8,7 @@ def plugin_main(*args, **kwargs):
     prefix = args[0]
     addrs = []
     
-    #return 1 - 1000
-    for i in range(1,500):
-        addrs.append("%s%i" % (prefix, i))
-    
-    for i in range(1000,2000):
+    for i in range(1,1010):
         addrs.append("%s%i" % (prefix, i))
     
     return addrs
