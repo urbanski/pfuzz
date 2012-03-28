@@ -32,6 +32,12 @@ parser = argparse.ArgumentParser(description = "an ipv6 prefix fuzzer")
 parser.add_argument("prefix", help="prefix to fuzz")
 parser.add_argument('--module', action="store", help = "specify a module to use")
 parser.add_argument('--module-list', dest="module_list", action="store_true", default=False, help="List modules installed")
+
+#mac module arguments
+g_mac = parser.add_argument_group('mac')
+g_mac.add_argument("--mac-org", dest="mac_org", action="store", default = "", help = "Organization to check MACs against")
+
+#parse arguments
 args = parser.parse_args()
 
 #grab the prefix
@@ -49,7 +55,7 @@ if (args.module != None):
     
 #iterate over plugins
 for plugin in plugins:
-    plugin_addrs = call_plugin(plugin, prefix)
+    plugin_addrs = call_plugin(plugin, prefix, args)
     if plugin_addrs != None:
         #loop through addresses
         for addr in plugin_addrs:
