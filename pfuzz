@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+import re
 
 #load the plugin
 def load_plugin(name):
@@ -12,21 +13,77 @@ def load_plugin(name):
 def call_plugin(name, *args):
     plugin = load_plugin(name)
     return plugin.plugin_main(*args)
+    
+def h_iter(sStart, sEnd):
+    output = []
+    try:
+        iStart = int(sStart, 16)
+        iEnd = int (sEnd, 16)
+        if (iEnd > iStart):
+            for i in range(iStart, iEnd+1):
+                #print "%s %s %i" % (hex(i), hex(i)[2:],i)
+                output.append(hex(i)[2:])
+                #print output
+        else:
+            print "Hex is backwards"
+            sys.exit(0)
+    except ValueError:
+        print "Invalid hex specified"
+        sys.exit(0)
+    
+    return output
+        
+
+def prefix_parse(prefix):
+    prefixes = []
+    reHRange = re.compile("\[([a-fA-F0-9]{1,4})\-([a-fA-F0-9]{1,4})\]")
+    try:
+        m = reHRange.findall(prefix)
+        lPrefixes = []
+        oPrefixes = []
+        lPrefixes.append(prefix)
+        for reT in m:
+            oPrefixes = []
+            lIters = h_iter(reT[0],reT[1])
+            for lIterable in lIters:
+                for t_prefix in lPrefixes:
+                    oPrefixes.append(t_prefix.replace("[%s-%s]" % (reT[0], reT[1]),lIterable,1))
+            lPrefixes = oPrefixes
+    except TypeError:
+        pass
+    return oPrefixes
 
 #make sure prefix is valid
 def prefix_sanitize(prefix):
-    #does prefix end in :: ?
-    if (prefix[len(prefix)-2] != "::"):
-        prefix = "%s::" % prefix
+    #check v6 address format
+    # 2 acceptable inputs - fully qualified, or prefix notation
+    bValid = False
     
+    reSAddr = re.compile("[0-9A-F]{1,4}:[0-9A-F]{1,4}:[0-9A-F]{1,4}:[0-9A-F]{1,4}:[0-9A-F]{1,4}:[0-9A-F]{1,4}:[0-9A-F]{1,4}:")
+    try:
+        if (reSAddr.match(prefix)):
+            #match for long format
+            bValid = True
+    except TypeError:
+        bValid = False
+    try:
+        if (prefix[len(prefix)-2] == "::"):
+            #match for prefix
+            bValid = True
+    except TypeError:
+        bValid = False
+    
+    
+    return bValid
+
+        
 ################
 #entrypoint
 ################
 
 #versioning information
-app_version = "1.0"
 prefix = ""
-plugins = ["dhcp","ports", "mac"]
+plugins = ["dhcp","ports"]
 addrs = []
 
 #handle command line arguments
@@ -43,7 +100,13 @@ g_mac.add_argument("--mac-org", dest="mac_org", action="store", default = "", he
 args = parser.parse_args()
 
 #grab the prefix
-prefix = args.prefix
+prefixes = prefix_parse(args.prefix)
+print prefixes
+
+#make sure they are valid
+#if (prefix_sanitize(prefix) == False):
+#    print "Invalid prefix specified"
+#    sys.exit(0)
     
 #do they want us to list the modules
 if (args.module_list == True):
@@ -55,13 +118,14 @@ if (args.module_list == True):
 if (args.module != None):
     plugins = [args.module]
     
-#iterate over plugins
-for plugin in plugins:
-    plugin_addrs = call_plugin(plugin, prefix, args)
-    if plugin_addrs != None:
-        #loop through addresses
-        for addr in plugin_addrs:
-            addrs.append(addr)
+#iterate over prefixes
+for prefix in prefixes:
+    #iterate over plugins
+    for plugin in plugins:
+        plugin_addrs = call_plugin(plugin, prefix, args)
+        if plugin_addrs != None:
+            for addr in plugin_addrs:
+                addrs.append(addr)
 
 #remove duplicates
 finalized_addrs = list(set(addrs))
