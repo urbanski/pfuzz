@@ -17,9 +17,17 @@ $ pfuzz 2001:468:c80::
 
 Create a list of addresses to scan that start with 2001:468:c80::
 
-$ pfuzz --mac-org=Vmware
+$ pfuzz 2001:468:c80:: --mac-org=Vmware
 
 Specify the MAC originator to identify SLAAC hosts
+
+$ pfuzz 2001:468:c80:: --mac-org=Xerox | nmap -iL - -F -6
+
+Scan the hosts with nmap
+
+$ pfuzz 2001:468:c80:[0-3]:1:[0-FF]:
+
+Range queries
 
 modules
 --------
