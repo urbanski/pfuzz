@@ -25,7 +25,7 @@ $ pfuzz 2001:468:c80:: --mac-org=Xerox | nmap -iL - -F -6
 
 Scan the hosts with nmap
 
-$ pfuzz 2001:468:c80:[0-3]:1:[0-FF]:
+$ pfuzz 2001:468:c80:[0-3]:F:[0-FF]:
 
 Range queries
 
