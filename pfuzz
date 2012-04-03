@@ -43,6 +43,7 @@ def prefix_parse(prefix):
     prefixes = []
     reHRange = re.compile("\[([a-fA-F0-9]{1,4})\-([a-fA-F0-9]{1,4})\]")
     try:
+<<<<<<< HEAD
 	m = reHRange.findall(prefix)
 	if (len(m) == 0):
 	    oPrefixes = [prefix]
@@ -57,6 +58,21 @@ def prefix_parse(prefix):
 		    for t_prefix in lPrefixes:
 			oPrefixes.append(t_prefix.replace("[%s-%s]" % (reT[0], reT[1]),lIterable,1))
 		lPrefixes = oPrefixes
+=======
+        m = reHRange.findall(prefix)
+        lPrefixes = []
+        oPrefixes = []
+        lPrefixes.append(prefix)
+        for reT in m:
+            oPrefixes = []
+            lIters = h_iter(reT[0],reT[1])
+            for lIterable in lIters:
+                for t_prefix in lPrefixes:
+                    oPrefixes.append(t_prefix.replace("[%s-%s]" % (reT[0], reT[1]),lIterable,1))
+            lPrefixes = oPrefixes
+        if len(m) == 0:
+            oPrefixes.append(prefix)
+>>>>>>> range query bug fix
     except TypeError:
         pass
     return oPrefixes
@@ -109,8 +125,12 @@ $$ |
 
 #versioning information
 prefix = ""
+<<<<<<< HEAD
 installed_plugins = ["dhcp","ports","mac"]
 plugins = ["dhcp","ports"]
+=======
+plugins = []        #no modules are enabled by default
+>>>>>>> range query bug fix
 addrs = []
 
 #handle command line arguments
@@ -126,6 +146,7 @@ g_mac.add_argument("--mac-org", dest="mac_org", action="store", default = "", he
 #parse arguments
 args = parser.parse_args()
 
+<<<<<<< HEAD
 #do they want us to list the modules
 if (args.module_list == True):
 	print pfuzz_logo
@@ -146,6 +167,16 @@ if (args.prefix == None):
 #grab the prefix
 prefixes = prefix_parse(args.prefix)
 #print prefixes
+=======
+#grab the prefix
+prefixes = prefix_parse(args.prefix)
+    
+#do they want us to list the modules
+if (args.module_list == True):
+    print "Installed Modules:"
+    print "dhcp,mac,ports"
+    sys.exit(0)
+>>>>>>> range query bug fix
     
 #is a parser set?
 if (args.module != None):
