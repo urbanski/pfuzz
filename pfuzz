@@ -49,6 +49,8 @@ def prefix_parse(prefix):
                 for t_prefix in lPrefixes:
                     oPrefixes.append(t_prefix.replace("[%s-%s]" % (reT[0], reT[1]),lIterable,1))
             lPrefixes = oPrefixes
+        if len(m) == 0:
+            oPrefixes.append(prefix)
     except TypeError:
         pass
     return oPrefixes
@@ -83,7 +85,7 @@ def prefix_sanitize(prefix):
 
 #versioning information
 prefix = ""
-plugins = ["dhcp","ports"]
+plugins = []        #no modules are enabled by default
 addrs = []
 
 #handle command line arguments
@@ -101,17 +103,11 @@ args = parser.parse_args()
 
 #grab the prefix
 prefixes = prefix_parse(args.prefix)
-print prefixes
-
-#make sure they are valid
-#if (prefix_sanitize(prefix) == False):
-#    print "Invalid prefix specified"
-#    sys.exit(0)
     
 #do they want us to list the modules
 if (args.module_list == True):
     print "Installed Modules:"
-    print plugins
+    print "dhcp,mac,ports"
     sys.exit(0)
     
 #is a parser set?
