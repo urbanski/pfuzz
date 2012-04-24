@@ -36,7 +36,7 @@ mac - scan for devices based on SLAAC MAC
 requirements
 --------------
 
-python 2.6 or greater
+python 2.7 or greater
 python-netaddr
 
 
