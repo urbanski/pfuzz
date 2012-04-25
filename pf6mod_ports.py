@@ -1,5 +1,11 @@
 #!/usr/bin/python
 
+def plugin_description():
+    return "Iterates common TCP port-related patterns"
+
+def plugin_usage():
+    return "./pfuzz --module=ports"
+
 def plugin_main(*args, **kwargs):
     prefix = args[0]
     addrs = []

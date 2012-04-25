@@ -36,6 +36,13 @@ def get_orig_mac(mac_org):
                 
     return orgs[mac_org]
 
+#describes how the plugin works
+def plugin_description():
+    return "Uses MAC addresses to identify SLAAC hosts"
+
+#describes how to use the plugin
+def plugin_usage():
+    return "./pfuzz --mac-org=Vmware"
 
 def plugin_main(*args, **kwargs):
     prefix = args[0]
