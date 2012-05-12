@@ -44,6 +44,9 @@ def prefix_parse(prefix):
     reHRange = re.compile("\[([a-fA-F0-9]{1,4})\-([a-fA-F0-9]{1,4})\]")
     try:
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> bringing in pull
 	m = reHRange.findall(prefix)
 	if (len(m) == 0):
 	    oPrefixes = [prefix]
@@ -58,6 +61,7 @@ def prefix_parse(prefix):
 		    for t_prefix in lPrefixes:
 			oPrefixes.append(t_prefix.replace("[%s-%s]" % (reT[0], reT[1]),lIterable,1))
 		lPrefixes = oPrefixes
+<<<<<<< HEAD
 =======
         m = reHRange.findall(prefix)
         lPrefixes = []
@@ -73,6 +77,8 @@ def prefix_parse(prefix):
         if len(m) == 0:
             oPrefixes.append(prefix)
 >>>>>>> range query bug fix
+=======
+>>>>>>> bringing in pull
     except TypeError:
         pass
     return oPrefixes
@@ -126,11 +132,16 @@ $$ |
 #versioning information
 prefix = ""
 <<<<<<< HEAD
+<<<<<<< HEAD
 installed_plugins = ["dhcp","ports","mac"]
 plugins = ["dhcp","ports"]
 =======
 plugins = []        #no modules are enabled by default
 >>>>>>> range query bug fix
+=======
+installed_plugins = ["dhcp","ports","mac"]
+plugins = ["dhcp","ports"]
+>>>>>>> bringing in pull
 addrs = []
 
 #handle command line arguments
@@ -146,6 +157,7 @@ g_mac.add_argument("--mac-org", dest="mac_org", action="store", default = "", he
 #parse arguments
 args = parser.parse_args()
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 #do they want us to list the modules
 if (args.module_list == True):
@@ -177,6 +189,28 @@ if (args.module_list == True):
     print "dhcp,mac,ports"
     sys.exit(0)
 >>>>>>> range query bug fix
+=======
+#do they want us to list the modules
+if (args.module_list == True):
+	print pfuzz_logo
+	print "Installed Modules:"
+	for it_plugin in installed_plugins:
+	    print "\n *** %s *** " % it_plugin
+	    plugin_info = call_plugin_info(it_plugin)
+	    print "description:\n%s\n" % plugin_info[0]
+	    print "usage:\n%s" % plugin_info[1]
+	sys.exit(0)
+
+#make sure the prefix is specified
+if (args.prefix == None):
+	print "You must specify a prefix"
+	sys.exit(0)
+
+
+#grab the prefix
+prefixes = prefix_parse(args.prefix)
+#print prefixes
+>>>>>>> bringing in pull
     
 #is a parser set?
 if (args.module != None):
