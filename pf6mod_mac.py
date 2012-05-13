@@ -3,7 +3,7 @@
 import re
 import sys
 import os
-import  urllib2
+import urllib2
 
 MANUF_URL = "http://anonsvn.wireshark.org/wireshark/trunk/manuf"
 MANUF_PATH = "/etc/manuf"
