@@ -135,6 +135,7 @@ oparser.add_option("-l", "--list-modules", action="store_true", dest="module_lis
 oparser.add_option("--mac-org", action="store", dest="mac_org", default="", help="Organization to check MACs against")
 oparser.add_option("-s","--sample", type="int", action="store", dest="sample_size", default=0, help="Number of IPs to sample")
 oparser.add_option("-t","--test", action="store_true", dest="performance_test", default=False, help="Print performance information")
+oparser.add_option("-p","--percentage", type="float", action="store", dest="percentage_target", default=0, help="Percentage target")
 (options, args) = oparser.parse_args()
 
 #removed argparse functionality to support python 2.6 by default. optparse is deprecated in 2.7 so argparse code will be retained until 2.7 becomes the primary distribution
@@ -198,6 +199,17 @@ for prefix in prefixes:
 perf_log("About to dedup addrs, which has %i members" % len(addrs))
 perf_raw_addr_count = len(addrs)
 finalized_addrs = list(set(addrs))
+
+#Percentage target OR sample size, not both!
+if (options.sample_size != 0 and options.percentage_target != 0):
+    #we cannot have both
+    print "Fatal: You cannot set a sample size and a percentage target!"
+    oparser.print_help()
+    sys.exit(0)
+elif (options.percentage_target != 0):
+    #figure out sample sized based on percentage target
+    options.sample_size = int(round(perf_raw_addr_count * (options.percentage_target * .01)))
+    perf_log("Percentage target convered to sample size %i" % options.sample_size)
 
 if (options.sample_size != 0 and options.sample_size < len(finalized_addrs)):
     #only return a certain number of results
