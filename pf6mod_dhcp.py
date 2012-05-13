@@ -3,10 +3,17 @@
 #
 #   dhcp
 
+def plugin_usage():
+    return "./pfuzz --module=dhcp"
+
+def plugin_description():
+    return "Iterates commonly used DHCP patterns"
+
 def plugin_main(*args, **kwargs):
     prefix = args[0]
     addrs = []
     
+    #the most common use case; ::1-100
     for i in range(1,100):
         addrs.append("%s%i" % (prefix, i))
     
