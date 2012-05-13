@@ -6,12 +6,12 @@ from optparse import OptionParser
 
 #load the plugin
 def load_plugin(name):
-    mod = __import__("pf6mod_%s" % name)
+    mod = __import__("pf6mod_%s" % name[0])
     return mod
 
 #get the plugin info
 def call_plugin_info(name):
-    plugin = load_plugin(name)
+    plugin = load_plugin(name[0])
     return [plugin.plugin_description(), plugin.plugin_usage()]
 
 #call the plugin
@@ -87,8 +87,8 @@ def prefix_sanitize(prefix):
 
 #optparse related functions
 def optp_module_callback(option, opt, value, parser):
-  setattr(parser.values, option.dest, value.split(','))
-
+    if (value != None):
+        setattr(parser.values, option.dest, value.split(','))
         
 ################
 #entrypoint
@@ -120,7 +120,7 @@ addrs = []
 
 #handle command line arguments
 oparser = OptionParser()
-oparser.add_option("-m", "--module", action="callback", dest="module", default="dhcp", callback=optp_module_callback, help="specify the generation module to use. multiple modules should be seperated with commas")
+oparser.add_option("-m", "--module", action="callback", type="string", dest="module", default="dhcp", callback=optp_module_callback, help="specify the generation module to use. multiple modules should be seperated with commas")
 oparser.add_option("-l", "--list-modules", action="store_true", dest="module_list", default=False, help="List module information")
 oparser.add_option("--mac-org", action="store", dest="mac_org", default="", help="Organization to check MACs against")
 (options, args) = oparser.parse_args()
@@ -151,8 +151,8 @@ if (options.module_list == True):
 	sys.exit(0)
 
 #make sure the prefix is specified
-if (args[0] == None):
-	print "You must specify a prefix"
+if (len(args) == 0 or args[0] == None):
+	print "Fatal: You must specify a prefix to fuzz"
 	sys.exit(0)
 
 
