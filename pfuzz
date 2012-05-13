@@ -167,15 +167,18 @@ if (len(options.module) > 0):
     
 #iterate over prefixes
 for prefix in prefixes:
-    #iterate over plugins
-    for plugin in plugins:
-        print plugin[0]
-        print prefix
-        print options
-        plugin_addrs = call_plugin(plugin[0], prefix, options)
-        if plugin_addrs != None:
-            for addr in plugin_addrs:
-                addrs.append(addr)
+    if (prefix[len(prefix)-1] == ":"):
+        #iterate over plugins
+        for plugin in plugins:
+            print plugin[0]
+            print prefix
+            print options
+            plugin_addrs = call_plugin(plugin[0], prefix, options)
+            if plugin_addrs != None:
+                for addr in plugin_addrs:
+                    addrs.append(addr)
+    else:
+        addrs.append(prefix)
 
 #PERF remove duplicates
 finalized_addrs = list(set(addrs))
