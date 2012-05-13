@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-import argparse
 import sys
 import re
+from optparse import OptionParser
 
 #load the plugin
 def load_plugin(name):
@@ -43,10 +43,6 @@ def prefix_parse(prefix):
     prefixes = []
     reHRange = re.compile("\[([a-fA-F0-9]{1,4})\-([a-fA-F0-9]{1,4})\]")
     try:
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> bringing in pull
 	m = reHRange.findall(prefix)
 	if (len(m) == 0):
 	    oPrefixes = [prefix]
@@ -61,24 +57,6 @@ def prefix_parse(prefix):
 		    for t_prefix in lPrefixes:
 			oPrefixes.append(t_prefix.replace("[%s-%s]" % (reT[0], reT[1]),lIterable,1))
 		lPrefixes = oPrefixes
-<<<<<<< HEAD
-=======
-        m = reHRange.findall(prefix)
-        lPrefixes = []
-        oPrefixes = []
-        lPrefixes.append(prefix)
-        for reT in m:
-            oPrefixes = []
-            lIters = h_iter(reT[0],reT[1])
-            for lIterable in lIters:
-                for t_prefix in lPrefixes:
-                    oPrefixes.append(t_prefix.replace("[%s-%s]" % (reT[0], reT[1]),lIterable,1))
-            lPrefixes = oPrefixes
-        if len(m) == 0:
-            oPrefixes.append(prefix)
->>>>>>> range query bug fix
-=======
->>>>>>> bringing in pull
     except TypeError:
         pass
     return oPrefixes
@@ -106,6 +84,11 @@ def prefix_sanitize(prefix):
     
     return bValid
 
+
+#optparse related functions
+def optp_module_callback(option, opt, value, parser):
+  setattr(parser.values, option.dest, value.split(','))
+
         
 ################
 #entrypoint
@@ -131,36 +114,33 @@ $$ |
 
 #versioning information
 prefix = ""
-<<<<<<< HEAD
-<<<<<<< HEAD
 installed_plugins = ["dhcp","ports","mac"]
 plugins = ["dhcp","ports"]
-=======
-plugins = []        #no modules are enabled by default
->>>>>>> range query bug fix
-=======
-installed_plugins = ["dhcp","ports","mac"]
-plugins = ["dhcp","ports"]
->>>>>>> bringing in pull
 addrs = []
 
 #handle command line arguments
-parser = argparse.ArgumentParser(description = "an ipv6 prefix fuzzer", epilog="For more information visit www.dragonresearchgroup.org/pfuzz")
-parser.add_argument("prefix", nargs="?", help="prefix to fuzz")
-parser.add_argument('--module', action="store", help = "specify a module to use")
-parser.add_argument('--module-list', dest="module_list", action="store_true", default=False, help="List modules installed")
+oparser = OptionParser()
+oparser.add_option("-m", "--module", action="callback", dest="module", default="dhcp", callback=optp_module_callback, help="specify the generation module to use. multiple modules should be seperated with commas")
+oparser.add_option("-l", "--list-modules", action="store_true", dest="module_list", default=False, help="List module information")
+oparser.add_option("--mac-org", action="store", dest="mac_org", default="", help="Organization to check MACs against")
+(options, args) = oparser.parse_args()
+
+#removed argparse functionality to support python 2.6 by default. optparse is deprecated in 2.7 so argparse code will be retained until 2.7 becomes the primary distribution
+#parser = argparse.ArgumentParser(description = "an ipv6 prefix fuzzer", epilog="For more information visit www.dragonresearchgroup.org/pfuzz")
+#parser.add_argument("prefix", nargs="?", help="prefix to fuzz")
+#parser.add_argument('--module', action="store", help = "specify a module to use")
+#parser.add_argument('--module-list', dest="module_list", action="store_true", default=False, help="List modules installed")
 
 #mac module arguments
-g_mac = parser.add_argument_group('mac','MAC module options')
-g_mac.add_argument("--mac-org", dest="mac_org", action="store", default = "", help = "Organization to check MACs against")
+#g_mac = parser.add_argument_group('mac','MAC module options')
+#g_mac.add_argument("--mac-org", dest="mac_org", action="store", default = "", help = "Organization to check MACs against")
 
 #parse arguments
-args = parser.parse_args()
+#args = parser.parse_args()
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 #do they want us to list the modules
-if (args.module_list == True):
+#if (args.module_list == True):
+if (options.module_list == True):
 	print pfuzz_logo
 	print "Installed Modules:"
 	for it_plugin in installed_plugins:
@@ -171,50 +151,18 @@ if (args.module_list == True):
 	sys.exit(0)
 
 #make sure the prefix is specified
-if (args.prefix == None):
+if (args[0] == None):
 	print "You must specify a prefix"
 	sys.exit(0)
 
 
 #grab the prefix
-prefixes = prefix_parse(args.prefix)
+prefixes = prefix_parse(args[0])
 #print prefixes
-=======
-#grab the prefix
-prefixes = prefix_parse(args.prefix)
-    
-#do they want us to list the modules
-if (args.module_list == True):
-    print "Installed Modules:"
-    print "dhcp,mac,ports"
-    sys.exit(0)
->>>>>>> range query bug fix
-=======
-#do they want us to list the modules
-if (args.module_list == True):
-	print pfuzz_logo
-	print "Installed Modules:"
-	for it_plugin in installed_plugins:
-	    print "\n *** %s *** " % it_plugin
-	    plugin_info = call_plugin_info(it_plugin)
-	    print "description:\n%s\n" % plugin_info[0]
-	    print "usage:\n%s" % plugin_info[1]
-	sys.exit(0)
-
-#make sure the prefix is specified
-if (args.prefix == None):
-	print "You must specify a prefix"
-	sys.exit(0)
-
-
-#grab the prefix
-prefixes = prefix_parse(args.prefix)
-#print prefixes
->>>>>>> bringing in pull
     
 #is a parser set?
-if (args.module != None):
-    plugins = [args.module]
+if (len(options.module) > 0):
+    plugins = [options.module]
     
 #iterate over prefixes
 for prefix in prefixes:
@@ -225,9 +173,10 @@ for prefix in prefixes:
             for addr in plugin_addrs:
                 addrs.append(addr)
 
-#remove duplicates
+#PERF remove duplicates
 finalized_addrs = list(set(addrs))
 
+#PERF
 #output options
 for addr in finalized_addrs:
     print addr
