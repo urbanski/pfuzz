@@ -6,12 +6,12 @@ from optparse import OptionParser
 
 #load the plugin
 def load_plugin(name):
-    mod = __import__("pf6mod_%s" % name[0])
+    mod = __import__("pf6mod_%s" % name)
     return mod
 
 #get the plugin info
 def call_plugin_info(name):
-    plugin = load_plugin(name[0])
+    plugin = load_plugin(name)
     return [plugin.plugin_description(), plugin.plugin_usage()]
 
 #call the plugin
@@ -120,6 +120,7 @@ addrs = []
 
 #handle command line arguments
 oparser = OptionParser()
+oparser.set_usage("\n./pfuzz 2001:468:c80:1::\n./pfuzz -m mac --mac-org=Vmware 2001:468:c80::beef:\n/pfuzz -m dhcp 2001:468:c80:[a-f]:1::")
 oparser.add_option("-m", "--module", action="callback", type="string", dest="module", default="dhcp", callback=optp_module_callback, help="specify the generation module to use. multiple modules should be seperated with commas")
 oparser.add_option("-l", "--list-modules", action="store_true", dest="module_list", default=False, help="List module information")
 oparser.add_option("--mac-org", action="store", dest="mac_org", default="", help="Organization to check MACs against")
@@ -168,7 +169,10 @@ if (len(options.module) > 0):
 for prefix in prefixes:
     #iterate over plugins
     for plugin in plugins:
-        plugin_addrs = call_plugin(plugin, prefix, args)
+        print plugin[0]
+        print prefix
+        print options
+        plugin_addrs = call_plugin(plugin[0], prefix, options)
         if plugin_addrs != None:
             for addr in plugin_addrs:
                 addrs.append(addr)
