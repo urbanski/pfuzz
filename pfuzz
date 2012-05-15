@@ -185,10 +185,10 @@ for prefix in prefixes:
     if (prefix[len(prefix)-1] == ":"):
         #iterate over plugins
         for plugin in plugins:
-            print plugin[0]
-            print prefix
-            print options
-            plugin_addrs = call_plugin(plugin[0], prefix, options)
+            #print plugin[0]
+            #print prefix
+            #print options
+            plugin_addrs = call_plugin(plugin, prefix, options)
             if plugin_addrs != None:
                 for addr in plugin_addrs:
                     addrs.append(addr)
