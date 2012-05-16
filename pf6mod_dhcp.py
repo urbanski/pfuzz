@@ -20,7 +20,7 @@ def plugin_main(*args, **kwargs):
     #Jagornet DHCP Server v1.1 
     #:2:1::/64
     for i in range(10,255):
-        addrs.append("%s%s" % (prefix, hex(i)))
+        addrs.append("%s%s" % (prefix, hex(i)[2:]))
         
     #WIDE-DHCP
     for i in range(1000,2000):
