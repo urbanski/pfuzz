@@ -1,4 +1,12 @@
 #!/usr/bin/python
+#
+#   pfuzz
+#   a prefix fuzzer for IPv6 networks
+#
+#   a project of the Dragon Research Group <dragonresearchgroup.org>
+#   license: GNU GPL v3 <http://www.gnu.org/licenses/gpl-3.0.txt>
+#   author: Will Urbanski <will.urbanski@gmail.com>
+#
 
 import sys
 import re
@@ -138,19 +146,6 @@ oparser.add_option("-t","--test", action="store_true", dest="performance_test", 
 oparser.add_option("-p","--percentage", type="float", action="store", dest="percentage_target", default=0, help="Percentage target")
 (options, args) = oparser.parse_args()
 
-#removed argparse functionality to support python 2.6 by default. optparse is deprecated in 2.7 so argparse code will be retained until 2.7 becomes the primary distribution
-#parser = argparse.ArgumentParser(description = "an ipv6 prefix fuzzer", epilog="For more information visit www.dragonresearchgroup.org/pfuzz")
-#parser.add_argument("prefix", nargs="?", help="prefix to fuzz")
-#parser.add_argument('--module', action="store", help = "specify a module to use")
-#parser.add_argument('--module-list', dest="module_list", action="store_true", default=False, help="List modules installed")
-
-#mac module arguments
-#g_mac = parser.add_argument_group('mac','MAC module options')
-#g_mac.add_argument("--mac-org", dest="mac_org", action="store", default = "", help = "Organization to check MACs against")
-
-#parse arguments
-#args = parser.parse_args()
-
 #do they want us to list the modules
 #if (args.module_list == True):
 if (options.module_list == True):
@@ -178,7 +173,7 @@ perf_log("Prefix parse completed")
     
 #is a parser set?
 if (len(options.module) > 0):
-    plugins = [options.module]
+    plugins = options.module
     
 #iterate over prefixes
 for prefix in prefixes:
