@@ -29,17 +29,19 @@ Range queries
 
 modules
 --------
-ports - uses common ports to detect common service addresses
-dhcp - scans common DHCP address ranges
-mac - scan for devices based on SLAAC MAC
+* ports - uses common ports to detect common service addresses
+* dhcp - scans common DHCP address ranges
+* mac - scan for devices based on SLAAC MAC
 
 requirements
 --------------
-python 2.6 or greater
-python-netaddr
+* python 2.6 or greater
+* python-netaddr
 
 
 
 author
 -------
 Will Urbanski
+
+a project of the Dragon Research Group <dragonresearchgroup.org>
