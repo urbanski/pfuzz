@@ -1,7 +1,13 @@
 #!/usr/bin/python
-
 #
-#   dhcp
+#   pf6mod_dhcp
+#
+#   provides dhcp fuzzing functionality for pfuzz
+#
+#   a project of the Dragon Research Group <dragonresearchgroup.org>
+#   license: GNU GPL v3 <http://www.gnu.org/licenses/gpl-3.0.txt>
+#   author: Will Urbanski <will.urbanski@gmail.com>
+#
 
 def plugin_usage():
     return "./pfuzz --module=dhcp"

@@ -1,4 +1,13 @@
 #!/usr/bin/python
+#
+#   pf6mod_mac
+#
+#   provides MAC (SLAAC) fuzzing for pfuzz
+#
+#   a project of the Dragon Research Group <dragonresearchgroup.org>
+#   license: GNU GPL v3 <http://www.gnu.org/licenses/gpl-3.0.txt>
+#   author: Will Urbanski <will.urbanski@gmail.com>
+#
 
 import re
 import sys
