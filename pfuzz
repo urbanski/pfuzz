@@ -1,6 +1,7 @@
 #!/usr/bin/python
 #
 #   pfuzz
+#
 #   a prefix fuzzer for IPv6 networks
 #
 #   a project of the Dragon Research Group <dragonresearchgroup.org>
@@ -169,7 +170,6 @@ if (len(args) == 0 or args[0] == None):
 perf_log("About to parse prefixes: %s" % args[0])
 prefixes = prefix_parse(args[0])
 perf_log("Prefix parse completed")
-#print prefixes
     
 #is a parser set?
 if (len(options.module) > 0):
@@ -180,9 +180,6 @@ for prefix in prefixes:
     if (prefix[len(prefix)-1] == ":"):
         #iterate over plugins
         for plugin in plugins:
-            #print plugin[0]
-            #print prefix
-            #print options
             plugin_addrs = call_plugin(plugin, prefix, options)
             if plugin_addrs != None:
                 for addr in plugin_addrs:
