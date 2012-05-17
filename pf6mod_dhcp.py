@@ -32,10 +32,6 @@ def plugin_main(*args, **kwargs):
     for i in range(1000,2000):
         addrs.append("%s%s" % (prefix, i))
     
-    
     return addrs
-    
-    
-    #2:0A-2:FF
     
     
