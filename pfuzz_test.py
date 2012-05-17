@@ -4,6 +4,7 @@ import unittest
 import pf6mod_dhcp
 import pf6mod_ports
 import pf6mod_mac
+import os
 
 class TestPF6modDHCP(unittest.TestCase):
     def setUp(self):
@@ -31,6 +32,14 @@ class TestPF6modMAC(unittest.TestCase):
         self.assertTrue(type(pf6mod_mac.get_orig_mac("Xerox")) is list)
         self.assertEqual(pf6mod_mac.get_orig_mac("Xerox"), ['00:00:01', '00:00:02', '00:00:03', '00:00:04', '00:00:05', '00:00:06', '00:00:07', '00:00:08', '00:00:09', '00:00:AA', '9C:93:4E'])
             
+    def test_manuf_dl(self):
+        if os.path.isfile("pfuzz_manuf") == True:
+            os.unlink("pfuzz_manuf")
+            
+        atari = pf6mod_mac.get_orig_mac("Atari")
+        self.assertTrue(os.path.isfile("pfuzz_manuf") is True)
+        self.assertTrue("00:00:36" in atari)
+    
     def test_usage(self):
         self.assertTrue (type(pf6mod_mac.plugin_usage()) is str)
 
