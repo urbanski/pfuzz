@@ -86,7 +86,12 @@ def plugin_main(*args, **kwargs):
     
     #check for mac origin company
     if (app_args.mac_org != None):
-        hexprefixes = get_orig_mac(app_args.mac_org)
+        try:
+            hexprefixes = get_orig_mac(app_args.mac_org)
+        except KeyError:
+            hexprefixes = []
+            print "Fatal: MAC organization not found: %s" % app_args.mac_org
+            sys.exit(0)
     else:
         hexprefixes = ["0000:00"]
 
