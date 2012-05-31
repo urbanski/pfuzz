@@ -90,7 +90,7 @@ def plugin_main(*args, **kwargs):
             hexprefixes = get_orig_mac(app_args.mac_org)
         except KeyError:
             hexprefixes = []
-            print "Fatal: MAC organization not found: %s" % app_args.mac_org
+            print "Fatal: MAC organization '%s' not found" % app_args.mac_org
             sys.exit(0)
     else:
         hexprefixes = ["0000:00"]
@@ -104,10 +104,16 @@ def plugin_main(*args, **kwargs):
                 hextuple.append("%s%s" % (c,d))
         
         
+        
         for x in hextuple:
             for y in hextuple:
                 for z in hextuple:
-                    hexaddrs.append("%s%s:%s%s" % (hexprefix,x,y,z))
+                    hexaddrs.append("%s:FF:FE:%s:%s:%s" % (hexprefix,x,y,z))
+            break
+            #print len(hexaddrs)
+            #for i in range(1,100):
+            #    print hexaddrs[i]
+            #sys.exit(0)
     
     
         #print hexaddrs
@@ -115,6 +121,4 @@ def plugin_main(*args, **kwargs):
             addrs.append("%s%s" % (prefix, hexaddr))
         
     return addrs
-    
-    
     
