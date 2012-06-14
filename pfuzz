@@ -16,8 +16,7 @@ import time
 import logging
 from optparse import OptionParser
 
-#specify the log level
-logging.basicConfig(filename='pfuzz.log',level=logging.DEBUG)
+
 
 #load the plugin
 def load_plugin(name):
@@ -34,13 +33,6 @@ def call_plugin_info(name):
 def call_plugin(name, *args):
     plugin = load_plugin(name)
     return plugin.plugin_main(*args)
-    
-#for printing performance information
-def perf_log(value):
-    global options
-    if (options.performance_test == True):
-        print "[%f] %s" % (time.time(),value)
-    
     
 def h_iter(sStart, sEnd):
     output = []
@@ -133,6 +125,9 @@ $$ |
 """
 
 
+#enable logging; DEBUG is the default option for development
+logging.basicConfig(filename='pfuzz.log',level=logging.DEBUG)
+
 
 #versioning information
 prefix = ""
@@ -150,11 +145,12 @@ oparser.add_option("--mac-org", action="store", dest="mac_org", default="", help
 oparser.add_option("-s","--sample", type="int", action="store", dest="sample_size", default=0, help="Number of IPs to sample")
 oparser.add_option("-t","--test", action="store_true", dest="performance_test", default=False, help="Print performance information")
 oparser.add_option("-p","--percentage", type="float", action="store", dest="percentage_target", default=0, help="Percentage target")
+logging.debug("Preparing to parse cmd line args")
 (options, args) = oparser.parse_args()
 
-#do they want us to list the modules
-#if (args.module_list == True):
+#Check to see if the -l or --list-modules options were picked
 if (options.module_list == True):
+        logging.debug("User has chosen to display module list")
 	print pfuzz_logo
 	print "Installed Modules:"
 	for it_plugin in installed_plugins:
@@ -164,19 +160,19 @@ if (options.module_list == True):
 	    print "usage:\n%s" % plugin_info[1]
 	sys.exit(0)
 
-#make sure the prefix is specified
+#make sure the IPv6 network address prefix is specified
 if (len(args) == 0 or args[0] == None):
         print "Fatal: You must specify a prefix to fuzz"
         oparser.print_help()
         sys.exit(0)
 
 
-#grab the prefix
-perf_log("About to parse prefixes: %s" % args[0])
+#parse the prefix to make sure it's valid
+logging.debug("About to parse prefixes: %s" % args[0])
 prefixes = prefix_parse(args[0])
-perf_log("Prefix parse completed")
+logging.debug("Prefix parse completed")
     
-#Check if a specific command line option was specified
+#Check if a specific module was specified
 if (len(options.module) > 0):
     logging.debug(options.module)
     logging.info("Module has been explicitly specified: set to %s" % plugins)
@@ -195,7 +191,7 @@ for prefix in prefixes:
         addrs.append(prefix)
 
 #PERF remove duplicates
-perf_log("About to dedup addrs, which has %i members" % len(addrs))
+logging.debug("About to dedup addrs, which has %i members" % len(addrs))
 perf_raw_addr_count = len(addrs)
 finalized_addrs = list(set(addrs))
 
@@ -208,7 +204,7 @@ if (options.sample_size != 0 and options.percentage_target != 0):
 elif (options.percentage_target != 0):
     #figure out sample sized based on percentage target
     options.sample_size = int(round(perf_raw_addr_count * (options.percentage_target * .01)))
-    perf_log("Percentage target convered to sample size %i" % options.sample_size)
+    logging.debug("Percentage target convered to sample size %i" % options.sample_size)
 
 if (options.sample_size != 0 and options.sample_size < len(finalized_addrs)):
     #only return a certain number of results
@@ -227,7 +223,7 @@ elif (options.sample_size > len(finalized_addrs)):
     sys.exit(0)
 
 #PERF
-perf_log("About to iterate finalized_addrs, which has %i members" % len(finalized_addrs))
+logging.debug("About to iterate finalized_addrs, which has %i members" % len(finalized_addrs))
 #output options
 if (options.performance_test == True):
     print "%i raw addresses identified by fuzzer" % perf_raw_addr_count
