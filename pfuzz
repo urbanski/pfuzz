@@ -13,10 +13,15 @@ import sys
 import re
 import random
 import time
+import logging
 from optparse import OptionParser
+
+#specify the log level
+logging.basicConfig(filename='pfuzz.log',level=logging.DEBUG)
 
 #load the plugin
 def load_plugin(name):
+    logging.debug("load_plugin(): Loading module %s" % name)
     mod = __import__("pf6mod_%s" % name)
     return mod
 
@@ -139,7 +144,7 @@ addrs = []
 oparser = OptionParser()
 oparser.set_description("A prefix fuzzer for IPv6 networks")
 oparser.set_usage("\n./pfuzz 2001:468:c80:1::\n./pfuzz -m mac --mac-org=Vmware 2001:468:c80::beef:\n./pfuzz -m dhcp 2001:468:c80:[a-f]:1")
-oparser.add_option("-m", "--module", action="callback", type="string", dest="module", default="dhcp", callback=optp_module_callback, help="specify the generation module to use. multiple modules should be seperated with commas")
+oparser.add_option("-m", "--module", action="callback", type="string", dest="module", default="", callback=optp_module_callback, help="specify the generation module to use. multiple modules should be seperated with commas")
 oparser.add_option("-l", "--list-modules", action="store_true", dest="module_list", default=False, help="List module information")
 oparser.add_option("--mac-org", action="store", dest="mac_org", default="", help="Organization to check MACs against")
 oparser.add_option("-s","--sample", type="int", action="store", dest="sample_size", default=0, help="Number of IPs to sample")
@@ -171,8 +176,10 @@ perf_log("About to parse prefixes: %s" % args[0])
 prefixes = prefix_parse(args[0])
 perf_log("Prefix parse completed")
     
-#is a parser set?
+#Check if a specific command line option was specified
 if (len(options.module) > 0):
+    logging.debug(options.module)
+    logging.info("Module has been explicitly specified: set to %s" % plugins)
     plugins = options.module
     
 #iterate over prefixes
