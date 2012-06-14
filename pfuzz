@@ -126,8 +126,7 @@ $$ |
 
 
 #enable logging; DEBUG is the default option for development
-logging.basicConfig(filename='pfuzz.log',level=logging.DEBUG)
-
+logging.basicConfig(filename='pfuzz.log',level=logging.DEBUG,format='%(asctime)s %(levelname)s: %(message)s')
 
 #versioning information
 prefix = ""
@@ -194,6 +193,7 @@ for prefix in prefixes:
 logging.debug("About to dedup addrs, which has %i members" % len(addrs))
 perf_raw_addr_count = len(addrs)
 finalized_addrs = list(set(addrs))
+logging.debug("Dedup completed, now there are %i members" % len(finalized_addrs))
 
 #Percentage target OR sample size, not both!
 if (options.sample_size != 0 and options.percentage_target != 0):
@@ -206,7 +206,9 @@ elif (options.percentage_target != 0):
     options.sample_size = int(round(perf_raw_addr_count * (options.percentage_target * .01)))
     logging.debug("Percentage target convered to sample size %i" % options.sample_size)
 
+#PERF
 if (options.sample_size != 0 and options.sample_size < len(finalized_addrs)):
+    logging.debug("Arguments require subset of addresses to be returned")
     #only return a certain number of results
     sample_size = options.sample_size
     max_addrs = len(finalized_addrs)
@@ -214,9 +216,9 @@ if (options.sample_size != 0 and options.sample_size < len(finalized_addrs)):
     finalized_addrs = []
     for i in range(0, sample_size):
         rand_int = random.randint(0,max_addrs-i-1)
-        s_addr = t_addrs[rand_int]
-        finalized_addrs.append(s_addr)
-        t_addrs.remove(s_addr)
+        finalized_addrs.append(t_addrs[rand_int])
+        t_addrs.pop(rand_int)
+    logging.debug("Finished identifying subset")
 elif (options.sample_size > len(finalized_addrs)):
     print "Fatal: Sample size is too large for result set."
     oparser.print_help()
