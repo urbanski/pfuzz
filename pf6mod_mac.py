@@ -103,18 +103,14 @@ def plugin_main(*args, **kwargs):
             for d in hexchars:
                 hextuple.append("%s%s" % (c,d))
         
+        xtuple = hextuple
+        ytuple = hextuple
+        ztuple = hextuple
         
-        
-        for x in hextuple:
-            for y in hextuple:
-                for z in hextuple:
-                    hexaddrs.append("%s:FF:FE:%s:%s:%s" % (hexprefix,x,y,z))
-            break
-            #print len(hexaddrs)
-            #for i in range(1,100):
-            #    print hexaddrs[i]
-            #sys.exit(0)
-    
+        for x in xtuple:
+            for y in ytuple:
+                for z in ztuple:
+                    hexaddrs.append("%sFF:FE%s:%s%s" % (hexprefix,x,y,z))
     
         #print hexaddrs
         for hexaddr in hexaddrs:
