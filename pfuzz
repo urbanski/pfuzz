@@ -1,11 +1,26 @@
 #!/usr/bin/python
+#
+#   pfuzz
+#
+#   a prefix fuzzer for IPv6 networks
+#
+#   a project of the Dragon Research Group <dragonresearchgroup.org>
+#   license: GNU GPL v3 <http://www.gnu.org/licenses/gpl-3.0.txt>
+#   author: Will Urbanski <will.urbanski@gmail.com>
+#
 
-import argparse
 import sys
 import re
+import random
+import time
+import logging
+from optparse import OptionParser
+
+
 
 #load the plugin
 def load_plugin(name):
+    logging.debug("load_plugin(): Loading module %s" % name)
     mod = __import__("pf6mod_%s" % name)
     return mod
 
@@ -64,7 +79,6 @@ def prefix_parse(prefix):
 #make sure prefix is valid
 def prefix_sanitize(prefix):
     #check v6 address format
-    # 2 acceptable inputs - fully qualified, or prefix notation
     bValid = False
     
     reSAddr = re.compile("[0-9A-F]{1,4}:[0-9A-F]{1,4}:[0-9A-F]{1,4}:[0-9A-F]{1,4}:[0-9A-F]{1,4}:[0-9A-F]{1,4}:[0-9A-F]{1,4}:")
@@ -84,6 +98,11 @@ def prefix_sanitize(prefix):
     
     return bValid
 
+
+#optparse related functions
+def optp_module_callback(option, opt, value, parser):
+    if (value != None):
+        setattr(parser.values, option.dest, value.split(','))
         
 ################
 #entrypoint
@@ -106,6 +125,8 @@ $$ |
 """
 
 
+#enable logging; DEBUG is the default option for development
+logging.basicConfig(filename='pfuzz.log',level=logging.DEBUG,format='%(asctime)s %(levelname)s: %(message)s')
 
 #versioning information
 prefix = ""
@@ -114,20 +135,21 @@ plugins = ["dhcp","ports"]
 addrs = []
 
 #handle command line arguments
-parser = argparse.ArgumentParser(description = "an ipv6 prefix fuzzer", epilog="For more information visit www.dragonresearchgroup.org/pfuzz")
-parser.add_argument("prefix", nargs="?", help="prefix to fuzz")
-parser.add_argument('--module', action="store", help = "specify a module to use")
-parser.add_argument('--module-list', dest="module_list", action="store_true", default=False, help="List modules installed")
+oparser = OptionParser()
+oparser.set_description("A prefix fuzzer for IPv6 networks")
+oparser.set_usage("\n./pfuzz 2001:468:c80:1::\n./pfuzz -m mac --mac-org=Vmware 2001:468:c80::beef:\n./pfuzz -m dhcp 2001:468:c80:[a-f]:1")
+oparser.add_option("-m", "--module", action="callback", type="string", dest="module", default="", callback=optp_module_callback, help="specify the generation module to use. multiple modules should be seperated with commas")
+oparser.add_option("-l", "--list-modules", action="store_true", dest="module_list", default=False, help="List module information")
+oparser.add_option("--mac-org", action="store", dest="mac_org", default="", help="Organization to check MACs against")
+oparser.add_option("-s","--sample", type="int", action="store", dest="sample_size", default=0, help="Number of IPs to sample")
+oparser.add_option("-t","--test", action="store_true", dest="performance_test", default=False, help="Print performance information")
+oparser.add_option("-p","--percentage", type="float", action="store", dest="percentage_target", default=0, help="Percentage target")
+logging.debug("Preparing to parse cmd line args")
+(options, args) = oparser.parse_args()
 
-#mac module arguments
-g_mac = parser.add_argument_group('mac','MAC module options')
-g_mac.add_argument("--mac-org", dest="mac_org", action="store", default = "", help = "Organization to check MACs against")
-
-#parse arguments
-args = parser.parse_args()
-
-#do they want us to list the modules
-if (args.module_list == True):
+#Check to see if the -l or --list-modules options were picked
+if (options.module_list == True):
+    logging.debug("User has chosen to display module list")
 	print pfuzz_logo
 	print "Installed Modules:"
 	for it_plugin in installed_plugins:
@@ -137,32 +159,86 @@ if (args.module_list == True):
 	    print "usage:\n%s" % plugin_info[1]
 	sys.exit(0)
 
-#make sure the prefix is specified
-if (args.prefix == None):
-	print "You must specify a prefix"
-	sys.exit(0)
+#make sure the IPv6 network address prefix is specified
+if (len(args) == 0 or args[0] == None):
+        print "Fatal: You must specify a prefix to fuzz"
+        oparser.print_help()
+        sys.exit(0)
 
 
-#grab the prefix
-prefixes = prefix_parse(args.prefix)
-#print prefixes
+#parse the prefix to make sure it's valid
+logging.debug("About to parse prefixes: %s" % args[0])
+prefixes = prefix_parse(args[0])
+logging.debug("Prefix parse completed")
     
-#is a parser set?
-if (args.module != None):
-    plugins = [args.module]
+#Check if a specific module was specified
+if (len(options.module) > 0):
+    logging.debug(options.module)
+    logging.info("Module has been explicitly specified: set to %s" % plugins)
+    plugins = options.module
     
 #iterate over prefixes
 for prefix in prefixes:
-    #iterate over plugins
-    for plugin in plugins:
-        plugin_addrs = call_plugin(plugin, prefix, args)
-        if plugin_addrs != None:
-            for addr in plugin_addrs:
-                addrs.append(addr)
+    if (prefix[len(prefix)-1] == ":"):
+        #iterate over plugins
+        for plugin in plugins:
+            plugin_addrs = call_plugin(plugin, prefix, options)
+            if plugin_addrs != None:
+                for addr in plugin_addrs:
+                    addrs.append(addr)
+    else:
+        addrs.append(prefix)
 
-#remove duplicates
+#PERF remove duplicates
+logging.debug("About to dedup addrs, which has %i members" % len(addrs))
+perf_raw_addr_count = len(addrs)
 finalized_addrs = list(set(addrs))
+logging.debug("Dedup completed, now there are %i members" % len(finalized_addrs))
 
+#Percentage target OR sample size, not both!
+if (options.sample_size != 0 and options.percentage_target != 0):
+    #we cannot have both
+    print "Fatal: You cannot set a sample size and a percentage target!"
+    oparser.print_help()
+    sys.exit(0)
+elif (options.percentage_target != 0):
+    #figure out sample sized based on percentage target
+    options.sample_size = int(round(perf_raw_addr_count * (options.percentage_target * .01)))
+    logging.debug("Percentage target convered to sample size %i" % options.sample_size)
+
+#PERF
+if (options.sample_size != 0 and options.sample_size < len(finalized_addrs)):
+    logging.debug("Arguments require subset of addresses to be returned")
+    #only return a certain number of results
+    sample_size = options.sample_size
+    max_addrs = len(finalized_addrs)
+    t_addrs = finalized_addrs
+    finalized_addrs = []
+    for i in range(0, sample_size):
+        rand_int = random.randint(0,max_addrs-i-1)
+        finalized_addrs.append(t_addrs[rand_int])
+        t_addrs.pop(rand_int)
+    logging.debug("Finished identifying subset")
+elif (options.sample_size > len(finalized_addrs)):
+    print "Fatal: Sample size is too large for result set."
+    oparser.print_help()
+    sys.exit(0)
+
+#PERF
+logging.debug("About to iterate finalized_addrs, which has %i members" % len(finalized_addrs))
 #output options
-for addr in finalized_addrs:
-    print addr
+if (options.performance_test == True):
+    print "%i raw addresses identified by fuzzer" % perf_raw_addr_count
+    if (options.sample_size > 0):
+        print "%i addresses restricted by sampler" % options.sample_size
+        perf_total = options.sample_size
+        perf_pct = float((float(options.sample_size) / float(perf_raw_addr_count))*100)
+    else:
+        perf_total = perf_raw_addr_count
+        perc_pct = 100
+    
+    print "%i total addresses printed to stdout" % perf_total
+    print "%f%% addresses represnted by sample" % perf_pct
+else:
+    for addr in finalized_addrs:
+        print addr

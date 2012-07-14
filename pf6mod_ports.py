@@ -1,7 +1,16 @@
 #!/usr/bin/python
+#
+#   pf6mod_ports
+#
+#   provides port fuzzing for pfuzz
+#
+#   a project of the Dragon Research Group <dragonresearchgroup.org>
+#   license: GNU GPL v3 <http://www.gnu.org/licenses/gpl-3.0.txt>
+#   author: Will Urbanski <will.urbanski@gmail.com>
+#
 
 def plugin_description():
-    return "Iterates common TCP port-related patterns"
+    return "Iterates common IPv6 and TCP port-related patterns"
 
 def plugin_usage():
     return "./pfuzz --module=ports"
@@ -15,6 +24,9 @@ def plugin_main(*args, **kwargs):
     for i in range(1,3):
         for p in ports:
             addrs.append("%s%i:%i" % (prefix, i, p))
+            
+    #some popular paths
+    
     
     return addrs
     
